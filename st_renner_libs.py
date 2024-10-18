@@ -189,6 +189,9 @@ def eda():
     # Insere uma imagem na página
     st.image('itens_mais_vendidos.png', use_column_width=True)
 
+    # Insere uma imagem na página
+    st.image('item_108799.jpeg', use_column_width=True)
+
     # Cria o texto da página
     texto_top10_total = '''
         - Avaliando os 10 itens com maior valor total em vendas, podemos perceber que há um item com Código 108799 que possui valor total acima de 2 milhões de reais
@@ -198,7 +201,6 @@ def eda():
 
     # Mostra o texto na página
     st.markdown(texto_top10_total)
-
 
 def etl():
     # Cria o título da página
