@@ -284,104 +284,61 @@ def modelagem():
 
     # Cria o texto da página
     texto_modelagem = '''
-        A etapa de modelagem envolve a aplicação de algoritmos de machine learning para segmentar os clientes de acordo com características semelhantes.
-        
-        Exemplo de código de modelagem:
+        Como uma das estratégias utilizadas para a clusterização, decidimos utilizar o score RFM para segmentar os consumidores em perfis de consumo. 
+        O score RFM é uma métrica amplamente utilizada dentro de setores de marketing para entender perfis de clientes, e assim traçar estratégias adequadas. 
+        Também é utilizado em diversos resultados estado-da-arte para segmentação de clientes nos mais diversos domínios de consumo. 
+        O cálculo do score se dá pela concatenação de 3 métricas, representando Recência (o quão recente o cliente comprou um produto), Frequência (qual a quantidade de compras esse cliente fez), e monetário (o valor que essa cliente gasta em suas compras). 
+        Cada uma dessas métricas é escalada dentro de uma faixa de valores (a definir dependendo da estratégia utilizada) e sua concatenação resulta no score RFM. 
+	    A partir da geração desse score para cada uma das três métricas, é possível criar grupos (clusters) baseados em clientes que entram em determinadas faixas de valores. Para a criação dos clusters, nos baseamos na metodologia adotada pelo artigo publicado pelo site OmniConverter. 
+        Nesta metodologia, os autores constroem grupos de clientes em uma analogia com status de relacionamento, onde clientes podem apresentar diversos perfis, a serem detalhados mais abaixo. 
+        Tais clusterizações, além de fornecerem um perfil pré-traçado, permite o desenvolvimento de estratégias de marketing e fidelização visando tais grupos. 
+        Abaixo destacamos os grupos criados e possíveis análises sobre eles: 
     '''
 
     # Mostra o texto na página
     st.markdown(texto_modelagem)
 
-    df_final = pd.read_csv('./cliente_final.csv', sep=';', index_col='id_cliente')
-    df_final['data_ultima_compra_renner'] = pd.to_datetime(df_final['data_ultima_compra_renner'])
-    df_final['dias_ultima_compra_renner'] = (df_final['data_ultima_compra_renner'].max() - df_final['data_ultima_compra_renner']).dt.days
-    df_final['purchase'] = df_final['purchase'].apply(lambda x: float(x.replace(',', '.')))
-    df_final['ticket_medio'] = df_final['ticket_medio'].apply(lambda x: float(x.replace(',', '.')))
-    df_final = df_final[df_final['ticket_medio'] > 0]
-    df_final['intervalo_medio'] = df_final['intervalo_medio'].apply(lambda x: float(x.replace(',', '.')))
-    conditions = [
-        (df_final['dias_ultima_compra_renner'] == 0),
-        (df_final['dias_ultima_compra_renner'] > 1) & (df_final['dias_ultima_compra_renner'] < 5)
-    ]
-    choices = [0, 1]
-    # Recency conditions
-    recency_conditions = [
-        (df_final['dias_ultima_compra_renner'] < 90),
-        (df_final['dias_ultima_compra_renner'] >= 90) & (df_final['dias_ultima_compra_renner'] <= 180),
-        (df_final['dias_ultima_compra_renner'] > 180) & (df_final['dias_ultima_compra_renner'] <= 270),
-        (df_final['dias_ultima_compra_renner'] > 270) & (df_final['dias_ultima_compra_renner'] <= 365),
-        (df_final['dias_ultima_compra_renner'] > 365)
-    ]
-    recency_choices = [5, 4, 3, 2, 1]
+    # Cria o texto da página
+    texto_modelagem = '''
+    - Soulmates: Cluster dedicado aos clientes ideais que compram com frequência e gastam bem. É essencial manter seu engajamento com experiências positivas, monitorar sua contribuição para a receita e garantir que se sintam valorizados com um atendimento especial. 
 
-    # Frequency conditions
-    frequency_conditions = [
-        (df_final['total_compras'] < 5),
-        (df_final['total_compras'] >= 5) & (df_final['total_compras'] <= 10),
-        (df_final['total_compras'] >= 10) & (df_final['total_compras'] <= 15),
-        (df_final['total_compras'] >= 15) & (df_final['total_compras'] <= 20),
-        (df_final['total_compras'] > 20)
-    ]
-    frequency_choices = [1, 2, 3, 4, 5]
+    - Lovers: São clientes promissores que você deseja transformar em Soulmates. Para isso, é preciso entender suas dificuldades e oferecer valor em cada interação, aumentando a frequência de compras e a confiança na marca. 
 
-    # Monetary Conditions
+    - New Passions: são novos clientes com alto potencial de compra. Se bem tratados, podem se tornar Lovers ou Soulmates. É importante evitar a típica perda de 70-85% desses clientes após o primeiro pedido, analisando seu comportamento e ajustando a jornada do cliente. Para reter esses clientes, pode ser interessante se implementar um processo de onboarding que inclua medições de experiência, suporte direto e uma melhor experiência de unboxing, além de usar feedback do Net Promoter Score para construir confiança e resolver problemas rapidamente. 
 
-    monetary_conditions = [
-        (df_final['ticket_medio'] < 200),
-        (df_final['ticket_medio'] >= 200) & (df_final['ticket_medio'] <= 400),
-        (df_final['ticket_medio'] >= 400) & (df_final['ticket_medio'] <= 600),
-        (df_final['ticket_medio'] >= 600) & (df_final['ticket_medio'] <= 800),
-        (df_final['ticket_medio'] > 800)
-    ]
-    monetary_choices = [1, 2, 3, 4, 5]
-    df_final['Recency Score'] = np.select(recency_conditions, recency_choices)
-    df_final['Frequency Score'] = np.select(frequency_conditions, frequency_choices)
-    df_final['Monetary Score'] = np.select(monetary_conditions, monetary_choices)
-    profile_conditions = [
-        (df_final['Recency Score'] == 5) & (df_final['Frequency Score'] == 5) & (df_final['Monetary Score'] == 5), # Soulmates
-        (df_final['Recency Score'] >= 4) & (df_final['Frequency Score'] >= 3) & (df_final['Monetary Score'] >= 3), # Lovers
-        (df_final['Recency Score'] == 5) & (df_final['Frequency Score'] == 1) & (df_final['Monetary Score'] >= 4), # New Passions
-        (df_final['Recency Score'] == 4) & (df_final['Frequency Score'] == 1) & (df_final['Monetary Score'] == 4), # Flirting
-        (df_final['Recency Score'] == 4) & (df_final['Frequency Score'] == 1) & (df_final['Monetary Score'] == 1), # Apprentice
-        (df_final['Recency Score'] >= 2) & (df_final['Recency Score'] <= 3) & (df_final['Frequency Score'] >= 1) & (df_final['Monetary Score'] >= 1), # About to Dump You
-        (df_final['Recency Score'] == 1) & (df_final['Frequency Score'] == 5) & (df_final['Monetary Score'] == 5), # Ex Lovers
-        (df_final['Recency Score'] == 1) & (df_final['Frequency Score'] == 1) & (df_final['Monetary Score'] == 5), # Don Juan
-        (df_final['Recency Score'] == 1) & (df_final['Frequency Score'] == 2) & (df_final['Monetary Score'] == 1), # Break-ups
-        (df_final['Recency Score'] == 5) & (df_final['Frequency Score'] == 1) & (df_final['Monetary Score'] == 5), # Potencial Lovers
-        (df_final['Recency Score'] >= 3) & (df_final['Recency Score'] <= 4) & (df_final['Frequency Score'] == 3) & (df_final['Monetary Score'] >= 3) & (df_final['Monetary Score'] <= 4), # Platonic Friends
-    ]
+    - Flirting: são novos clientes que fizeram sua primeira compra, mas não tão recentemente e com menor valor. Mas apenas o fato deste cluster não ter um score de frequência alto não significa que não podem trazer mais valor no longo prazo. Eles apenas podem não ter tido a oportunidade de comprar mais vezes. Para retê-los, é importante aplicar as lições aprendidas com Soulmates e Lovers. Se não forem engajados, esses clientes podem ser classificados como "About to Dump You" devido à queda na frequência de compras. Assim, um processo de onboarding que construa confiança e ofereça valor é essencial, mantendo o foco nos clientes certos nos momentos certos. 
 
-    profile_choices = ['Soulmates', 'Lovers', 'New Passions', 'Flirting', 'Apprentice', 'About to Dump You', 'Ex Lovers', 'Don Juan', 'Break-ups', 'Potential Lovers', 'Platonic Friends']
-    df_final['Profile'] = np.select(profile_conditions, profile_choices, 'No Profile')
+    - Apprentice: É um segmento de clientes que fez 1-2 compras de baixo valor, mas ainda pode ter potencial para gastar mais. Esses clientes são cautelosos, pois não desenvolveram confiança na marca e podem comprar em concorrentes. Em decorrência de não termos muitos dados sobre esse tipo de cliente, a melhor maneira de abordar ele pode ser com conversas, que podem trazer valiosos insights para o negócio. 
 
-    # Criar um mapeamento para os valores categóricos de 'Profile'
-    profile_categories = df_final['Profile'].astype('category').cat.codes
+    - Platonic Friends: São clientes ativos que fazem um número moderado de pedidos de valor médio. 
 
-    # Criar gráfico 3D de dispersão
-    fig = go.Figure(data=[go.Scatter3d(
-        x=df_final['dias_ultima_compra_renner'],
-        y=df_final['total_compras'],
-        z=df_final['ticket_medio'],
-        mode='markers',
-        marker=dict(
-            size=5,
-            opacity=0.55,
-            color=profile_categories,  # Usar códigos numéricos para a cor
-            colorscale='Viridis',  # Escolher uma escala de cores
-            colorbar=dict(title='Profile')  # Adicionar a barra de cores
-        )
-    )])
+    - Potential Lovers: São clientes recém adquiridos com maior potencial de virarem Soulmates. 
 
-    # Configurar o layout do gráfico
-    fig.update_layout(
-        title='Distribuição 3D de Compras por Cliente',
-        scene=dict(
-            xaxis_title='Dias Desde Última Compra',
-            yaxis_title='Total de Compras',
-            zaxis_title='Ticket Médio'
-        )
-    )
+    - About to Dump You: É um segmento de clientes inativos que não compram há algum tempo; eles têm uma pontuação de Recência de 2-3 e uma frequência e valor monetário de 1 a 5. É crucial identificar os clientes com maior valor e frequência e entender por que eles pararam de comprar. Realize análises detalhadas sobre os produtos adquiridos, categorias preferidas e feedbacks anteriores para compreender suas motivações. Para engajar novamente este grupo pode ser necessário elaborar campanhas de reativação utilizando os mesmos canais pelos quais eles compraram antes, buscando sempre abordar suas experiências de forma respeitosa e evitando abordagens puramente transacionais.  
 
+    - Ex Lovers: São clientes que tinham alta frequência e valor de compras, mas abandonaram a marca, frequentemente devido à baixa qualidade dos produtos ou frustrações. Embora o desejo seja reconquistá-los, é importante entender os motivos da separação para oferecer um fechamento significativo. Coletar feedback sobre o que desagrada esses clientes é crucial para aprimorar a estratégia da marca a longo prazo, reconhecendo que nem sempre é possível retomar a relação. 
+
+    - Don Juan: São clientes que fizeram uma ou poucas compras de alto valor, mas nunca retornaram; é crucial entender por que isso aconteceu. O objetivo é reengajá-los em uma conversa, buscando feedback sobre sua experiência para identificar onde e qual foi o problema na jornada do cliente. Essas informações são valiosas para melhorar o processo de compra e aumentar a probabilidade de novas compras futuras. 
+
+    - Break-Ups: São clientes de baixo valor que compraram poucas vezes, têm alta taxa de devolução e só compram quando incentivados por descontos. Este segmento geralmente faz parte da taxa natural de churn de 15-25%, e não é necessário buscar fechamento como nos Ex-Lovers. O foco deve ser em entender seu comportamento e padrões de compra, monitorando a experiência em todos os canais. Aceitar a saída desses clientes pode ser benéfico, permitindo que você concentre recursos em segmentos mais promissores. 
+    '''
+
+    # Mostra o texto na página
+    st.markdown(texto_modelagem)
+
+    # Dados da tabela
+    data = {
+        "Grupo": ["Soulmates", "Lovers", "New Passions", "Flirting", "Apprentice", "Platonic Friends", "Potencial Lovers"],
+        "Score de Recência": ["5", "4-5", "5", "4", "4", "3-4", "5"],
+        "Score de Frequência": ["5", "3-5", "1", "1", "1", "3", "1"],
+        "Score Monetário": ["5", "3-5", "4-5", "4", "1", "3-4", "5"]
+    }
+
+    # Criar DataFrame
+    df = pd.DataFrame(data)
+
+    # Exibir a tabela no Streamlit
+    st.table(df.style.hide(axis="index"))
 
 def conclusao():
     # Cria o título da página
