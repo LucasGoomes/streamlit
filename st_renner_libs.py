@@ -328,10 +328,10 @@ def modelagem():
 
     # Dados da tabela
     data = {
-        "Grupo": ["Soulmates", "Lovers", "New Passions", "Flirting", "Apprentice", "Platonic Friends", "Potencial Lovers"],
-        "Score de Recência": ["5", "4-5", "5", "4", "4", "3-4", "5"],
-        "Score de Frequência": ["5", "3-5", "1", "1", "1", "3", "1"],
-        "Score Monetário": ["5", "3-5", "4-5", "4", "1", "3-4", "5"]
+        "Grupo": ["Soulmates", "Lovers", "New Passions", "Flirting", "Apprentice", "Platonic Friends", "Potencial Lovers", "About to Dump You", "Ex Lovers", "Don Juan", "Break Ups"],
+        "Score de Recência": ["5", "4-5", "5", "4", "4", "3-4", "5", "2-3", "1", "1", "1"],
+        "Score de Frequência": ["5", "3-5", "1", "1", "1", "3", "1", "1-5", "5", "1", "2"],
+        "Score Monetário": ["5", "3-5", "4-5", "4", "1", "3-4", "5", "1-5", "5", "5", "1"]
     }
 
     # Criar DataFrame
@@ -358,7 +358,7 @@ def conclusao():
     st.markdown(texto_conclusao)
     
     # Função para exibir PDF
-    file = 'C:\\Users\\ferre\\OneDrive\\PUCRS\\ProjetoEmCienciaDeDadosI\\Renner_Rethink\\ProjCD - Relatorio de Andamento.pdf'
+    file = '.\ProjCD - Relatorio de Andamento.pdf'
 
     with open(file, "rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode('utf-8')
