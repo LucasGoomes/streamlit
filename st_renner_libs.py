@@ -202,6 +202,9 @@ def eda():
     # Mostra o texto na página
     st.markdown(texto_top10_total)
 
+    # Insere uma imagem na página
+    st.image('top10_clientes.jpeg', use_column_width=True)
+
 def etl():
     # Cria o título da página
     st.markdown("<h1 style='color: #FF0000;'>Renner ReThink.</h1>", unsafe_allow_html=True)
